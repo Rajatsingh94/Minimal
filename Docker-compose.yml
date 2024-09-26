@@ -1,0 +1,31 @@
+version: '3'
+services:
+  grpc-server:
+    build:
+      context: ./server  # Path to the server folder containing the Dockerfile
+      dockerfile: Dockerfile
+    container_name: grpc-server
+    ports:
+      - "4000:4000"  # Expose port 4000 for the gRPC service
+    volumes:
+      - ./server:/usr/src/app  # Mount the server folder for development
+    networks:
+      - grpc-network
+
+  grpc-client:
+    build:
+      context: ./client  # Path to the client folder containing the Dockerfile
+      dockerfile: Dockerfile
+    container_name: grpc-client
+    ports:
+      - "8080:8080"  # Expose port 8080 for the client HTTP server
+    volumes:
+      - ./client:/usr/src/app  # Mount the client folder for development
+    networks:
+      - grpc-network
+    depends_on:
+      - grpc-server  # Ensure the server starts before the client
+
+networks:
+  grpc-network:
+    driver: bridge

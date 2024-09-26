@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Todo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+            text-align: center;
+            color: black;
+        }
+        .input-container {
+            margin-bottom: 30px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus {
+            border-color: black;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #333;
+        }
+        .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .todo-item {
+            background-color: lightgrey;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .todo-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        .todo-text {
+            font-size: 1.25rem;
+            color: #333;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Minimal Todo</h1>
+        <div class="input-container">
+            <input id="todo-input" type="text" placeholder="Enter a new todo...">
+            <button onclick="createTodo()">Create Todo</button>
+        </div>
+
+        <h2>Your Todos</h2>
+        <div id="todo-list" class="todo-list"></div>
+    </div>
+
+    <footer>
+        &copy; 2024 Minimal Todo App
+    </footer>
+
+    <script>
+        const API_URL = "http://localhost:8080";
+
+        // Function to create a new todo
+        function createTodo() {
+            const todoText = document.getElementById("todo-input").value;
+
+            if (todoText.trim() === "") {
+                alert("Please enter a todo!");
+                return;
+            }
+
+            fetch(`${API_URL}/create`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ text: todoText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("todo-input").value = "";  // Clear input
+                addTodoToUI(data.text);  // Immediately add the todo to UI
+            })
+            .catch(error => console.error("Error creating todo:", error));
+        }
+
+        // Function to add todo to the UI
+        function addTodoToUI(todoText) {
+            const todoList = document.getElementById("todo-list");
+
+            // Create a new todo item element
+            const todoItem = document.createElement("div");
+            todoItem.classList.add("todo-item");
+
+            // Create a text element for the todo
+            const todoTextElem = document.createElement("div");
+            todoTextElem.classList.add("todo-text");
+            todoTextElem.textContent = todoText;
+
+            // Append the text to the todo item
+            todoItem.appendChild(todoTextElem);
+
+            // Append the todo item to the list
+            todoList.appendChild(todoItem);
+        }
+
+        // Function to load all todos
+        function loadTodos() {
+            fetch(`${API_URL}/todos`)
+                .then(response => response.json())
+                .then(data => {
+                    const todoList = document.getElementById("todo-list");
+                    todoList.innerHTML = "";  // Clear the list
+                    data.items.forEach(todo => {
+                        addTodoToUI(todo.text);
+                    });
+                })
+                .catch(error => console.error("Error fetching todos:", error));
+        }
+
+        // Load todos on page load
+        window.onload = function () {
+            loadTodos();
+        };
+    </script>
+</body>
+</html>
