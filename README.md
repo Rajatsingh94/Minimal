@@ -8,5 +8,3 @@ Run the Code:
 git clone <repository-url>
 cd <project-directory>
 docker-compose up --build
-
-test
